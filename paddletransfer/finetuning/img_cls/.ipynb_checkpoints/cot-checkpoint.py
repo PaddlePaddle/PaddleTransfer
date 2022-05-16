@@ -1,10 +1,11 @@
 #TODO 接上VIT
+import sys
 import numpy as np
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from backbones import mobilenet_v2,resnet34,resnet50,resnet101,build_vit
-from tqdm import tqdm
+from paddle.vision.models  import mobilenet_v2,resnet34,resnet50,resnet101
+# from backbones import mobilenet_v2,resnet34,resnet50,resnet101,build_vit
 import copy
 
 from .base import FinetuneBase
@@ -17,6 +18,9 @@ class Head(nn.Layer):
         self.model_arch = model_arch
 
         if self.model_arch == 'vit':
+            vit_path = './backbones'
+            sys.path.append(vit_path)
+            from vit import build_vit
             imagenet_config = copy.deepcopy(config)
             imagenet_config.defrost()
             imagenet_config.DATA.NUM_CLASSES = 1000
@@ -62,7 +66,7 @@ class FinetuneCOT(FinetuneBase):
         train_labels_list = []
         imagenet_labels_list = []
 
-        for train_inputs, train_labels in tqdm(data_loader):
+        for train_inputs, train_labels in data_loader:
             self.model.eval()
             self.head.eval()
 

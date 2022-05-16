@@ -2,124 +2,87 @@ import time
 import logging
 import os
 import sys
-import math
 import argparse
 import random
-import numpy as np
 from visualdl import LogWriter
+import numpy as np
 
 import paddle
 import paddle.nn.functional as F
 from paddle.vision import transforms
 from paddle.vision.datasets import DatasetFolder
 
-from config import get_config
-from backbones import build_vit
 from paddletransfer.finetuning.img_cls import *
-
+from backbones import mobilenet_v2,resnet34,resnet50,resnet101
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description = 'PaddlePaddle Deep Transfer Learning Toolkit, Image Classification Fine-tuning Example')
-    
+    parser = argparse.ArgumentParser(description='PaddlePaddle Deep Transfer Learning Toolkit, Image Classification Fine-tuning Example')
     parser.add_argument('--name', type = str, default = 'flower102')
-    parser.add_argument('--train_dir', default = '../CoTuning/data/finetune/flower102/train')
-    parser.add_argument('--eval_dir', default = '../CoTuning/data/finetune/flower102/test')
+    parser.add_argument('--train_dir', default='../CoTuning/data/finetune/flower102/train')
+    parser.add_argument('--eval_dir', default='../CoTuning/data/finetune/flower102/test')
     parser.add_argument('--log_dir', default = './visual_log')
     parser.add_argument('--save', type = str, default = './output')
-    
 
-    parser.add_argument('--image_size', type = int, default = 384)
-    parser.add_argument('--batch_size', type = int, default = 8)
-    parser.add_argument('--batch_size_eval', type=int, default=8)
-    parser.add_argument('--epochs', type = int, default = 64)
-    parser.add_argument('--lr', type = float, default = 1e-3)
-    parser.add_argument('--wd', type=float, default=None)
-    parser.add_argument('--model_path',default = './models/vit_base_patch16_384.pdparams')
-    parser.add_argument('--cfg', type = str, default = "./configs/vit_base_patch16_384.yaml")
+    parser.add_argument('--model_arch', default='resnet50')
+    parser.add_argument('--image_size', type = int, default = 224)
+    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--batch_size_eval', type=int, default=32)
+    parser.add_argument('--epochs', type=int, default=40)
+    parser.add_argument('--lr', type=float, default=1e-2)
+    parser.add_argument('--wd', type=float, default=1e-4)
 
-    parser.add_argument('--algo', type=str, default = 'base')
-    parser.add_argument('--gpu', type = int, default = 0)
+    parser.add_argument('--algo', default='base')
+    parser.add_argument('--gpu', type=int, default=0)
     parser.add_argument('--print_frequency', type=int, default=100)
     parser.add_argument('--eval_frequency', type=int, default=1)
-    parser.add_argument('--save_frequency',default = 10)
+    parser.add_argument('--save_frequency', type=int, default=10)
     parser.add_argument('--seed', type=int, default=2022)
     args = parser.parse_args()
     return args
 
 
-def custom_config(args):
-    assert os.path.exists(args.cfg), "Please set the configuration file first."
-    config = get_config(args.cfg)
-    config.defrost()
-    config.DATA.DATA_PATH = args.train_dir
-    config.DATA.DATASET = args.name
-    config.DATA.IMAGE_SIZE = args.image_size
-    config.DATA.BATCH_SIZE = args.batch_size
-    config.DATA.BATCH_SIZE_EVAL = args.batch_size_eval
-    config.TRAIN.NUM_EPOCHS = args.epochs   # TODO 500 steps
-    config.TRAIN.WEIGHT_DECAY = args.wd
-    config.TRAIN.BASE_LR = args.lr
-    config.TRAIN.OPTIMIZER = 'Momentum'
-    config.REPORT_FREQ = args.print_frequency  # freq to logging info
-    config.VALIDATE_FREQ = args.eval_frequency  # freq to do validation
-    config.SAVE = args.save
-    config.SEED = args.seed
-    if args.eval_dir:
-        config.EVAL = True
-    
-    config.freeze()
-    return config
-
-
-def load_model(args, config):
-    paddle_model = build_vit(config)
-    assert os.path.exists(args.model_path), "Please download the pretrained model first."
-    model_state_dict = paddle.load(args.model_path)
-    paddle_model.set_state_dict(model_state_dict)
-    return paddle_model
-
-def get_dataloader_train(args,config):
+def get_dataloader_train(args):
     train_path = args.train_dir
     transform_train = transforms.Compose([
-        transforms.RandomResizedCrop(size=(config.DATA.IMAGE_SIZE, config.DATA.IMAGE_SIZE),
-                                     interpolation='bicubic'),
+        transforms.Resize(size=(256, 256)),
         transforms.RandomHorizontalFlip(),
+        transforms.RandomCrop(args.image_size),
         transforms.ToTensor(),
-        transforms.Normalize(mean=config.DATA.IMAGENET_MEAN, std=config.DATA.IMAGENET_STD)])
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
     train_set = DatasetFolder(train_path, transform=transform_train)
-    train_loader = paddle.io.DataLoader(train_set, shuffle=True, batch_size=config.DATA.BATCH_SIZE)
+    train_loader = paddle.io.DataLoader(train_set, shuffle=True, batch_size=args.batch_size)
     num_classes = len(train_set.classes)
 
     return train_loader, num_classes
 
-def get_dataloader_val(args,config):
+
+def get_dataloader_val(args):
     val_path = args.eval_dir
-    scale_size = int(math.floor(config.DATA.IMAGE_SIZE / config.DATA.CROP_PCT))
     transform_val = transforms.Compose([
-        transforms.Resize(scale_size, 'bicubic'), # single int for resize shorter side of image
-        transforms.CenterCrop((config.DATA.IMAGE_SIZE, config.DATA.IMAGE_SIZE)),
+        transforms.Resize(size=(256, 256)),
+        transforms.CenterCrop(args.image_size),
         transforms.ToTensor(),
-        transforms.Normalize(mean=config.DATA.IMAGENET_MEAN, std=config.DATA.IMAGENET_STD)])
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
     val_set = DatasetFolder(val_path, transform=transform_val)
-    val_loader = paddle.io.DataLoader(val_set, shuffle=False, batch_size=config.DATA.BATCH_SIZE_EVAL)
+    val_loader = paddle.io.DataLoader(val_set, shuffle=False, batch_size=args.batch_size_eval)
 
     return val_loader
 
 
-def determine_algo(model, args, config, train_loader):
+def determine_algo(model, args, train_loader):
     if args.algo == 'base':
-        algo = FinetuneBase(model, args.model_arch)
+        algo = FinetuneBase(model, model_arch = args.model_arch)
     elif args.algo == 'l2sp':
-        algo = FinetuneL2SP(model, args.model_arch)
+        algo = FinetuneL2SP(model, model_arch = args.model_arch)
     elif args.algo == 'delta':
-        algo = FinetuneDELTA(model, args.model_arch)
+        algo = FinetuneDELTA(model,model_arch = args.model_arch)
     elif args.algo == 'rifle':
-        algo = FinetuneRIFLE(model, args.model_arch, confs = {'reinit_epochs': [int(args.epochs*0.25),int(args.epochs*0.5),int(args.epochs*0.75)]})
+        algo = FinetuneRIFLE(model, model_arch = args.model_arch)
     elif args.algo == 'mmd':
-        algo = FinetuneMMD(model, args.model_arch)
+        algo = FinetuneMMD(model, model_arch = args.model_arch)
     elif args.algo == 'cot':
-        algo = FinetuneCOT(model, args.model_arch, data_loader = train_loader, vit_config = config)
+        algo = FinetuneCOT(model, model_arch = args.model_arch, data_loader = train_loader)
     return algo
 
 
@@ -142,6 +105,7 @@ def get_logger(filename, logger_name=None):
     return logger
 
 
+
 def train(dataloader,
           model,
           criterion,
@@ -151,8 +115,6 @@ def train(dataloader,
           total_epochs,
           total_batch,
           debug_steps=100,
-          accum_iter=1,
-          amp=False,
           logger=None):
     """Training for one epoch
     Args:
@@ -179,8 +141,7 @@ def train(dataloader,
     for batch_id, data in enumerate(dataloader):
         image = data[0]
         label = paddle.unsqueeze(data[1], 1)
-        features = model.forward_features(image)
-        logits = model.classifier(features)
+        logits, features = model(image)
 
         loss_ce = criterion(logits, label)
         loss_all = {'loss_ce': loss_ce}
@@ -225,140 +186,107 @@ def validate(dataloader, model, criterion, total_batch, debug_steps=100, logger=
     """
     model.eval()
     losses = []
-    top1_accuracies = []
-    top5_accuracies = []
+    accuracies = []
     time_st = time.time()
 
     with paddle.no_grad():
         for batch_id, data in enumerate(dataloader):
             image = data[0]
             label = paddle.unsqueeze(data[1], 1)
-            logits = model(image)
+            logits, _ = model(image)
 
             loss = criterion(logits, label)
-            acc1 = paddle.metric.accuracy(logits, label)
-            acc5 = paddle.metric.accuracy(logits, label, k=5)
-            top1_accuracies.append(acc1.numpy())
-            top5_accuracies.append(acc5.numpy())
+            acc = paddle.metric.accuracy(logits, label)
+            accuracies.append(acc.numpy())
             losses.append(loss.numpy())
 
-            avg_acc1, avg_acc5, avg_loss = np.mean(top1_accuracies), np.mean(top5_accuracies), np.mean(losses)
+            avg_acc, avg_loss = np.mean(accuracies), np.mean(losses)
 
-            if logger and batch_id % debug_steps ==0 and batch_id != 0:
+            if logger and batch_id % debug_steps == 0 and batch_id != 0:
                 logger.info(
                     f"Val Step[{batch_id:04d}/{total_batch:04d}], " +
                     f"Avg Loss: {avg_loss}, " +
-                    f"Avg Acc@1: {avg_acc1}, " +
-                    f"Avg Acc@5: {avg_acc5}")
+                    f"Avg Acc@1: {avg_acc}, ")
 
     val_time = time.time() - time_st
-    return avg_loss, avg_acc1, avg_acc5, val_time
+    return avg_loss, avg_acc, val_time
 
 
-def finetune_vit(args):
+def finetune_cnn(args):
     # STEP 0: Preparation
     
-    config = custom_config(args)
     last_epoch = -1
     paddle.device.set_device(f'gpu:{args.gpu}')
-    seed = config.SEED
+    seed = args.seed
     paddle.seed(seed)
     np.random.seed(seed)
     random.seed(seed)
-    if not os.path.exists(config.SAVE):
-        os.makedirs(config.SAVE, exist_ok=True)
-    logger = get_logger(filename=os.path.join(config.SAVE, f'{args.name}_{args.algo}.txt'))
+    if not os.path.exists(args.save):
+        os.makedirs(args.save, exist_ok=True)
+    logger = get_logger(filename=os.path.join(args.save, f'{args.name}_{args.algo}.txt'))
     logdir = os.path.join(args.log_dir,args.algo)
     if not os.path.exists(logdir):
         os.makedirs(logdir, exist_ok=True)
     writer = LogWriter(logdir = logdir)
     logger.info(f'\n{args}')
-    
 
     # STEP 1: Create train and val dataloader
-    dataloader_train, num_classes = get_dataloader_train(args,config)
+    dataloader_train, num_classes = get_dataloader_train(args)
     if args.eval_dir:
-        dataloader_val = get_dataloader_val(args,config)
-    print(f"------------num classes:{num_classes}")
+        dataloader_val = get_dataloader_val(args)
 
-    # STEP 2: Load model
-    config.defrost()
-    config.MODEL.NUM_CLASSES = num_classes
-    config.freeze()
-    logger.info(f'\n{config}')
-    model = load_model(args, config)
+    # STEP 2: load model
+    model = eval(args.model_arch)(pretrained=True, num_classes = num_classes)
     logger.info('finish load the pretrained model')
 
     # STEP 3: determine algorithm for finetune
-    algo = determine_algo(model, args, config, dataloader_train)
+    algo = determine_algo(model, args, dataloader_train)
 
     # STEP 4: Define optimizer and lr_scheduler
     criterion = paddle.nn.CrossEntropyLoss()
-    # warmup + cosine lr scheduler
     params = algo.params()
-    cosine_lr_scheduler = paddle.optimizer.lr.CosineAnnealingDecay(
-                        learning_rate=config.TRAIN.BASE_LR,
-                        T_max=config.TRAIN.NUM_EPOCHS - config.TRAIN.WARMUP_EPOCHS,
-                        eta_min=config.TRAIN.END_LR,
-                        last_epoch=-1)
-    lr_scheduler = paddle.optimizer.lr.LinearWarmup(
-                learning_rate=cosine_lr_scheduler,  # use cosine lr sched after warmup
-                warmup_steps=config.TRAIN.WARMUP_EPOCHS,    # only support position integet
-                start_lr=config.TRAIN.WARMUP_START_LR,
-                end_lr=config.TRAIN.BASE_LR,
-                last_epoch=config.TRAIN.LAST_EPOCH)
-    # set gradient clip
-    clip = paddle.nn.ClipGradByGlobalNorm(config.TRAIN.GRAD_CLIP)
-    optimizer = paddle.optimizer.Momentum(
-        parameters=params,
-        learning_rate=lr_scheduler, # set to scheduler
-        weight_decay=config.TRAIN.WEIGHT_DECAY,
-        momentum=0.9,
-        grad_clip=clip)
+    lr_scheduler = paddle.optimizer.lr.PiecewiseDecay(boundaries=[int(2.0*args.epochs/3.0)],values=[args.lr,args.lr*0.1])
+    optimizer = paddle.optimizer.Momentum(learning_rate=lr_scheduler,parameters=params,momentum=0.9,use_nesterov=True,weight_decay = args.wd)
 
     # STEP 5: Run training
     logger.info(f"Start training from epoch {last_epoch+1}.")
-    for epoch in range(last_epoch+1, config.TRAIN.NUM_EPOCHS+1):
+    for epoch in range(last_epoch+1, args.epochs+1):
         # train
         logger.info(f"Now training epoch {epoch}. LR={optimizer.get_lr():.6f}")
         train_loss, train_acc, train_time = train(dataloader=dataloader_train,
                                                   model=model,
                                                   criterion=criterion,
-                                                  algo = algo,
+                                                  algo=algo,
                                                   optimizer=optimizer,
                                                   epoch=epoch,
-                                                  total_epochs=config.TRAIN.NUM_EPOCHS,
+                                                  total_epochs=args.epochs,
                                                   total_batch=len(dataloader_train),
-                                                  debug_steps=config.REPORT_FREQ,
-                                                  accum_iter=config.TRAIN.ACCUM_ITER,
-                                                  amp=config.AMP,
+                                                  debug_steps=args.print_frequency,
                                                   logger=logger)
         lr_scheduler.step()
-        logger.info(f"----- Epoch[{epoch:03d}/{config.TRAIN.NUM_EPOCHS:03d}], " +
+        logger.info(f"----- Epoch[{epoch:03d}/{args.epochs:03d}], " +
                     f"Train Loss: {train_loss:.4f}, " +
                     f"Train Acc: {train_acc:.4f}, " +
                     f"time: {train_time:.2f}")
         writer.add_scalar(tag="train_acc", step=epoch, value=train_acc)
         writer.add_scalar(tag="train_loss", step=epoch, value=train_loss)
-        
+
         # validation
         if args.eval_dir:
-            if epoch % config.VALIDATE_FREQ == 0 or epoch == config.TRAIN.NUM_EPOCHS:
+            if epoch % args.eval_frequency == 0 or epoch == args.epochs:
                 logger.info(f'----- Validation after Epoch: {epoch}')
-                val_loss, val_acc1, val_acc5, val_time = validate(
+                val_loss, val_acc, val_time = validate(
                     dataloader=dataloader_val,
                     model=model,
                     criterion=criterion,
                     total_batch=len(dataloader_val),
-                    debug_steps=config.REPORT_FREQ,
+                    debug_steps=args.print_frequency,
                     logger=logger)
-                logger.info(f"----- Epoch[{epoch:03d}/{config.TRAIN.NUM_EPOCHS:03d}], " +
+                logger.info(f"----- Epoch[{epoch:03d}/{args.epochs:03d}], " +
                             f"Validation Loss: {val_loss:.4f}, " +
-                            f"Validation Acc@1: {val_acc1:.4f}, " +
-                            f"Validation Acc@5: {val_acc5:.4f}, " +
+                            f"Validation Acc@1: {val_acc:.4f}, " +
                             f"time: {val_time:.2f}")
-                writer.add_scalar(tag="val_acc1", step=epoch, value=val_acc1)
-                writer.add_scalar(tag="val_acc5", step=epoch, value=val_acc5)
+                writer.add_scalar(tag="val_acc", step=epoch, value=val_acc)
                 writer.add_scalar(tag="val_loss", step=epoch, value=val_loss)
 
         if epoch % args.save_frequency == 0 or epoch == args.epochs:
@@ -376,4 +304,6 @@ def finetune_vit(args):
 if __name__ == '__main__':
     print(paddle.__version__)
     args = get_args()
-    finetune_vit()
+    finetune_cnn(args)
+    # test()
+    
