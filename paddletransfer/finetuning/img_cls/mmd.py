@@ -1,4 +1,3 @@
-#TODO 首次实验运行中ing...
 import numpy as np
 import paddle
 import paddle.nn.functional as F

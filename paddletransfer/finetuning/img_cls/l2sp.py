@@ -1,4 +1,3 @@
-#TODO 找出loss_reg不变的原因
 import numpy as np
 import paddle
 import paddle.nn.functional as F

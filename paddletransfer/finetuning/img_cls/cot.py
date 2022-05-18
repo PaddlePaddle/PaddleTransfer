@@ -1,5 +1,3 @@
-#TODO 接上VIT
-import sys
 import numpy as np
 import paddle
 import paddle.nn as nn
@@ -116,7 +114,7 @@ class FinetuneCOT(FinetuneBase):
                           {'params': self.head.parameters()}]
         elif self.model_arch == 'mobilenet_v2':
             parameters = [{'params': self.model.features.parameters()},
-                          {'params': self.model.fc.parameters(),'learning_rate':10.0},
+                          {'params': self.model.classifier.parameters(),'learning_rate':10.0},
                           {'params': self.head.parameters()}]
         else:
             parameters = [{'params': self.model.conv1.parameters()},

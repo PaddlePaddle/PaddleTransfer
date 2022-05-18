@@ -1,4 +1,3 @@
-#TODO 首次实验进行中ing...
 import math
 import numpy as np
 import paddle

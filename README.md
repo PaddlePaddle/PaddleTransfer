@@ -42,7 +42,7 @@ Users can run our demo code for a quick start
 ```
 python finetune.py --name [experiment_name] --train_dir [path_to_train_dir] --eval_dir [path_to_eval_dir] --model_arch [model_archtechture] --algo [finetune_algorithm] --gpu [device_for_experiment]
 ```
-For model_arch argument, please choose one from "resnet", "mobilenet_v2" and "vit", mistyping may lead to unexpected behavior.
+For model_arch argument, please choose one from "resnet18", "resnet34", "resnet50", "resnet101", "resnet152", "mobilenet_v2" and "vit", mistyping may lead to unexpected behavior.
 
 If you want to finetune the ViT model, please make sure you have set the configuration file and pretrained parameters file correctly, and remember to add the corresponding argumengts(--cfg and --model_path) in your command. You can get the configuration file and pretrained model from [PaddleVit](https://github.com/BR-IDL/PaddleViT/tree/develop/image_classification/ViT).
 
@@ -53,15 +53,15 @@ If you want to finetune the ViT model, please make sure you have set the configu
 ```
 from paddletransfer.finetuning.img_cls import *
 ```
-We strongly recommand you to use the model architechtures we provide in ./backbones by following codes. The parameters setting are the same as the implementations in [paddle.vision.models](https://github.com/PaddlePaddle/Paddle/tree/release/2.3/python/paddle/vision/models), remember to set **pretrained=True** for finetuning.
+We strongly recommand you to use the model architechtures we provide in **backbones** by following codes. The parameters setting are the same as the implementations in [paddle.vision.models](https://github.com/PaddlePaddle/Paddle/tree/release/2.3/python/paddle/vision/models), remember to set **pretrained=True** for finetuning.
 ```
-from backbones import resnet50, mobilenet_v2, build_vit
+from backbones import resnet18, resnet34, resnet50, resnet101, resnet152, mobilenet_v2, build_vit
 ```
-Remember to put the ./backbones directory from [our project](https://github.com/PaddlePaddle/PaddleTransfer) under your working directory. We also provides ResNet model with different depth(resnet18, resnet34, resnet101 and resnet152).
+You can only import the model archtechtures that you need.
 
 If you want to use ViT model, please put the config.py file either from [our project](https://github.com/PaddlePaddle/PaddleTransfer) or [PaddleVit](https://github.com/BR-IDL/PaddleViT/tree/develop/image_classification/ViT) under your working directory and set other files correctly as described in [Quick Start](#Quick-Start)
 
-If you want to use your self-defined model, please make sure that the name of layers are consistent with the implementations in [paddle.vision.models](https://github.com/PaddlePaddle/Paddle/tree/release/2.3/python/paddle/vision/models) and your model has two outputs, which are the features(the intermediate output before average pooling layer and fc layer) and the original output.
+If you want to use your self-defined model, please make sure that the name of layers are consistent with the implementations in [paddle.vision.models](https://github.com/PaddlePaddle/Paddle/tree/release/2.3/python/paddle/vision/models) and your model has two outputs: The first one is the original output of the network and the second one is the features(the intermediate output before average pooling layer and fc layer).
 #### Initialize the algorithm object
 ```
 algo = FinetuneDELTA(model, model_arch)

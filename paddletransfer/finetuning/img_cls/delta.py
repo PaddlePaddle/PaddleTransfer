@@ -1,4 +1,3 @@
-#TODO 重复试验避免偶然性
 import numpy as np
 import paddle
 import paddle.nn.functional as F
