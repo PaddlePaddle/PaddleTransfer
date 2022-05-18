@@ -107,7 +107,7 @@ _confs = {'reg_weight': 0.1, 'kernel_mul': 2.0, 'kernel_num': 5}
 ### L2-SP
 Use the following code for invoking L2-SP algorithm 
 ```
-algo = FinetuneL2SP(model,model_arch,confs=confs)
+algo = FinetuneL2SP(model,model_arch,confs=_confs)
 ```
 The default hyperparameters for L2SP algorithms is as follows, if you want to modify them, please pass your own confs object to the initializer.
 ```
@@ -117,7 +117,7 @@ _confs = {'reg_weight': 0.01}
 ### DELTA
 Use the following code for invoking DELTA algorithm 
 ```
-algo = FinetuneDELTA(model,model_arch,confs=confs)
+algo = FinetuneDELTA(model,model_arch,confs=_confs)
 ```
 The default hyperparameters for DELTA algorithms is as follows, if you want to modify them, please pass your own confs object to the initializer.
 ```
@@ -127,7 +127,7 @@ _confs = {'reg_weight': 0.01}
 ### RIFLE
 Use the following code for invoking RIFLE algorithm 
 ```
-algo = FinetuneRIFLE(model,model_arch,confs=confs)
+algo = FinetuneRIFLE(model,model_arch,confs=_confs)
 ```
 The default hyperparameters for RIFLE algorithms is as follows, if you want to modify them, please pass your own confs object to the initializer.
 ```
@@ -138,11 +138,11 @@ _confs = {'reinit_epochs': [10,20,30]} # with total epochs = 40
 
 Use the following code for invoking Co-Tuning algorithm. The data_loader is used for relationship learning. 
 ```
-algo = FinetuneCOT(model, model_arch, data_loader=data_loader, confs=confs)
+algo = FinetuneCOT(model, model_arch, data_loader=data_loader, confs=_confs)
 ```
-If you want to use Co-Tuning algorithm on ViT, use the following code. The vit_config is used for auxillary imagenet classifier construction.
+If you want to use Co-Tuning algorithm on ViT, use the following code. The vit_config is used for auxillary imagenet classifier construction. Please make sure that your vit_config object passed to the initializer has the same structure with the official implementation in [PaddleVit](https://github.com/BR-IDL/PaddleViT/blob/develop/image_classification/ViT/config.py), you can use the get_config() function they provide to generate one easily.
 ```
-algo = FinetuneCOT(model, model_arch, data_loader=data_loader, vit_config=config, confs=confs)
+algo = FinetuneCOT(model, model_arch, data_loader=data_loader, vit_config=config, confs=_confs)
 ```
 The default hyperparameters for Co-Tuning algorithms is as follows, if you want to modify them, please pass your own confs object to the initializer.
 ```
