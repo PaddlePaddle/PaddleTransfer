@@ -38,8 +38,6 @@ class Head(nn.Layer):
         if self.model_arch != 'vit':
             x = self.avgpool(x)
             x = paddle.flatten(x, 1)
-            if self.model_arch == "mobilenet_v2":
-                x = self.dropout(x)
         x = self.fc(x)
         return x
 
