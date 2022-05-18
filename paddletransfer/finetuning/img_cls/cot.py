@@ -4,8 +4,7 @@ import numpy as np
 import paddle
 import paddle.nn as nn
 import paddle.nn.functional as F
-from paddle.vision.models  import mobilenet_v2,resnet34,resnet50,resnet101
-# from backbones import mobilenet_v2,resnet34,resnet50,resnet101,build_vit
+from backbones import mobilenet_v2,resnet18, resnet34, resnet50, resnet101, resnet152, build_vit
 import copy
 
 from .base import FinetuneBase
@@ -18,9 +17,6 @@ class Head(nn.Layer):
         self.model_arch = model_arch
 
         if self.model_arch == 'vit':
-            vit_path = './backbones'
-            sys.path.append(vit_path)
-            from vit import build_vit
             imagenet_config = copy.deepcopy(config)
             imagenet_config.defrost()
             imagenet_config.DATA.NUM_CLASSES = 1000
@@ -33,8 +29,7 @@ class Head(nn.Layer):
             self.fc = backbone.classifier
         elif model_arch == "mobilenet_v2":
             self.avgpool = backbone.pool2d_avg
-            self.dropout = backbone.dropout
-            self.fc = backbone.fc
+            self.fc = backbone.classifier
         else:
             self.avgpool = backbone.avgpool
             self.fc = backbone.fc

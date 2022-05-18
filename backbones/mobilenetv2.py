@@ -172,9 +172,8 @@ class MobileNetV2(nn.Layer):
             self.pool2d_avg = nn.AdaptiveAvgPool2D(1)
 
         if self.num_classes > 0:
-            self.dropout = nn.Dropout(0.2)
-            self.fc = nn.Linear(self.last_channel, num_classes)
-
+            self.classifier = nn.Sequential(
+                nn.Dropout(0.2), nn.Linear(self.last_channel, num_classes))
     def forward(self, x):
         fea = self.features(x)
 
@@ -185,8 +184,7 @@ class MobileNetV2(nn.Layer):
 
         if self.num_classes > 0:
             x = paddle.flatten(x, 1)
-            x = self.dropout(x)
-            x = self.fc(x)
+            x = self.classifier(x)
         return x, fea
 
 

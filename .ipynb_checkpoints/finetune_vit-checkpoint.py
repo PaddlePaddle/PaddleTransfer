@@ -362,7 +362,7 @@ def finetune_vit(args):
                 writer.add_scalar(tag="val_loss", step=epoch, value=val_loss)
 
         if epoch % args.save_frequency == 0 or epoch == args.epochs:
-            model_path = os.path.join(args.save, f"Epoch{epoch}.pdparams")
+            model_path = os.path.join(args.save, f"{args.name}_{args.algo}_Epoch{epoch}.pdparams")
             state_dict = dict()
             state_dict['model'] = model.state_dict()
             state_dict['optimizer'] = optimizer.state_dict()

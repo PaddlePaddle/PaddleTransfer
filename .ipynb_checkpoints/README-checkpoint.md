@@ -1,19 +1,3 @@
-Metadata-Version: 2.1
-Name: paddletransfer
-Version: 0.0.2
-Summary: transfer learning toolkits for finetune deep learning models
-Author: Baidu-BDL
-Author-email: autodl@baidu.com
-License: Apache 2.0
-Keywords: transfer learning toolkits for paddle models
-Classifier: Development Status :: 4 - Beta
-Classifier: Intended Audience :: Developers
-Classifier: License :: OSI Approved :: Apache Software License
-Classifier: Programming Language :: Python :: 3.9
-Requires-Python: >=3.6
-Description-Content-Type: text/markdown
-License-File: LICENSE
-
 # PaddleTransfer
 ## Introduction
 PaddleTransfer, a transfer learning tool of PaddlePaddle, provides a variety of algorithms to transfer the knowledge learned from source tasks to target task. It enables users to use the state-of-the-art transfer learning algorithms on main-stream model archtechtures.
@@ -44,13 +28,13 @@ python -m pip install paddletransfer
 ### Dependencies
 if you want to use our package in your own code, the following dependencies are required
 * python3
-* numpy >= 1.20
+* numpy
 * paddlepaddle >= 2.2
 
 If you want to run our demo script, please make sure the following packages are installed correctly on your machine.
 * visualdl
 
-
+If you want to use **Cotuning** algorithm on **your own ViT model**, please clone the [PaddleVit](https://github.com/BR-IDL/PaddleViT) project and put the [vit.py](https://github.com/BR-IDL/PaddleViT/blob/develop/image_classification/ViT/vit.py) file under **./backbone in your working directory**, and make sure your **config object** has the same structure as [PaddleVit's config](https://github.com/BR-IDL/PaddleViT/blob/develop/image_classification/ViT/config.py).
 
 ## Usage Guideline
 ### Quick Start
@@ -60,24 +44,13 @@ python finetune.py --name [experiment_name] --train_dir [path_to_train_dir] --ev
 ```
 For model_arch argument, please choose one from "resnet", "mobilenet_v2" and "vit", mistyping may lead to unexpected behavior.
 
-If you want to finetune the ViT model, please make sure you have set the configuration file and pretrained parameters file correctly, and remember to add the corresponding argumengts(--cfg and --model_path) in your command. You can get the configuration file and pretrained model from [PaddleVit](https://github.com/BR-IDL/PaddleViT/tree/develop/image_classification/ViT).
+If you want to finetune the ViT model on your dataset, please make sure you have set the configuration file and pretrained parameters file correctly, and remember to add the corresponding argumengts(--cfg and --model_path) in your command. You can get the configuration file and pretrained model from [PaddleVit](https://github.com/BR-IDL/PaddleViT/tree/develop/image_classification/ViT).
 
 ### Use PaddleTransfer in Your Own Code
-
-
 #### Import dependencies
 ```
 from paddletransfer.finetuning.img_cls import *
 ```
-We strongly recommand you to use the model architechtures we provide in ./backbones by following codes. The parameters setting are the same as the implementations in [paddle.vision.models](https://github.com/PaddlePaddle/Paddle/tree/release/2.3/python/paddle/vision/models), remember to set **pretrained=True** for finetuning.
-```
-from backbones import resnet50, mobilenet_v2, build_vit
-```
-Remember to put the ./backbones directory from [our project](https://github.com/PaddlePaddle/PaddleTransfer) under your working directory. We also provides ResNet model with different depth(resnet18, resnet34, resnet101 and resnet152).
-
-If you want to use ViT model, please put the config.py file either from [our project](https://github.com/PaddlePaddle/PaddleTransfer) or [PaddleVit](https://github.com/BR-IDL/PaddleViT/tree/develop/image_classification/ViT) under your working directory and set other files correctly as described in [Quick Start](#Quick-Start)
-
-If you want to use your self-defined model, please make sure that the name of layers are consistent with the implementations in [paddle.vision.models](https://github.com/PaddlePaddle/Paddle/tree/release/2.3/python/paddle/vision/models) and your model has two outputs, which are the features(the intermediate output before average pooling layer and fc layer) and the original output.
 #### Initialize the algorithm object
 ```
 algo = FinetuneDELTA(model, model_arch)
@@ -178,3 +151,5 @@ We have conducted some experiments on several dataset using algorithms provided 
 | DELTA    | 81.04    | **78.79**    | 67.47   |
 | RIFLE    | 80.74    | 78.08    | 63.15   |
 | CoTuning | **81.07**    | 78.00    | **69.39**   |
+
+ ![img](imgs/result.jpg)

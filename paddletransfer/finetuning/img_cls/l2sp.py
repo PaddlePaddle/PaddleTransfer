@@ -22,7 +22,6 @@ class FinetuneL2SP(FinetuneBase):
             if self.model_arch == 'vit':
                 if name.startswith('classifier'):
                     loss_reg += paddle.norm(param)
-                    print
                 else:
                     loss_reg += paddle.norm(param - self.pre_trained_weights[name])
             else:

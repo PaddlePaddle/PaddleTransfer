@@ -1,11 +1,12 @@
 from setuptools import setup, find_packages
+import paddletransfer
 
 with open("README.md", "r", encoding = "utf-8") as fh:
     long_description = fh.read()
 
 setup(
     name = "paddletransfer",
-    version = "0.0.1",
+    version = paddletransfer.__version__,
     author = "Baidu-BDL",
     author_email = "autodl@baidu.com",
     description = "transfer learning toolkits for finetune deep learning models",
@@ -18,10 +19,9 @@ setup(
         'Programming Language :: Python :: 3.9'
     ],
     packages = find_packages(),
-    python_requires=">=3.9",
+    python_requires=">=3.6",
     install_requires=[
-        'paddle>=2.2',
-        'numpy>=1.20'
+        'numpy'
     ],
     license = 'Apache 2.0',
     keywords = "transfer learning toolkits for paddle models"

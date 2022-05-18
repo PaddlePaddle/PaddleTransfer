@@ -5,7 +5,7 @@ with open("README.md", "r", encoding = "utf-8") as fh:
 
 setup(
     name = "paddletransfer",
-    version = "0.0.1",
+    version = "0.0.2",
     author = "Baidu-BDL",
     author_email = "autodl@baidu.com",
     description = "transfer learning toolkits for finetune deep learning models",
@@ -20,8 +20,7 @@ setup(
     packages = find_packages(),
     python_requires=">=3.9",
     install_requires=[
-        'paddle>=2.2',
-        'numpy>=1.20'
+        'numpy'
     ],
     license = 'Apache 2.0',
     keywords = "transfer learning toolkits for paddle models"

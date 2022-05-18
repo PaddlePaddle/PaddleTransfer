@@ -13,7 +13,7 @@ from paddle.vision import transforms
 from paddle.vision.datasets import DatasetFolder
 
 from paddletransfer.finetuning.img_cls import *
-from backbones import mobilenet_v2,resnet34,resnet50,resnet101
+from backbones import mobilenet_v2, resnet18, resnet34, resnet50, resnet101, resnet152
 
 
 def get_args():
@@ -290,7 +290,7 @@ def finetune_cnn(args):
                 writer.add_scalar(tag="val_loss", step=epoch, value=val_loss)
 
         if epoch % args.save_frequency == 0 or epoch == args.epochs:
-            model_path = os.path.join(args.save, f"Epoch{epoch}.pdparams")
+            model_path = os.path.join(args.save, f"{args.name}_{args.algo}_Epoch{epoch}.pdparams")
             state_dict = dict()
             state_dict['model'] = model.state_dict()
             state_dict['optimizer'] = optimizer.state_dict()
