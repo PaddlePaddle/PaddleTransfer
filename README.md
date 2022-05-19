@@ -27,13 +27,12 @@ python -m pip install paddletransfer
 ```
 ### Dependencies
 if you want to use our package in your own code, the following dependencies are required
-* python3
-* numpy >= 1.20
-* paddlepaddle >= 2.2
+* python >= 3.7
+* numpy >= 1.21
+* paddlepaddle >= 2.2 (with suitable CUDA and cuDNN version)
 
 If you want to run our demo script, please make sure the following packages are installed correctly on your machine.
 * visualdl
-
 
 
 ## Usage Guideline
@@ -150,7 +149,7 @@ The default hyperparameters for Co-Tuning algorithms is as follows, if you want 
 ```
 
 ### Algorithm Performance
-We have conducted some experiments on several dataset using algorithms provided by PaddleTransfer. Most of experiments use the default hyper parameter setting in finetune.py, except Co-Tuning. For Co-Tuning, We use default hyper parameters on bird classification task, lr = 0.002 and wd = 0.0005 on scene classification task, lr = 0.001 and wd = 0.0005 on texture classification task. The outcomes are as follows.
+We have conducted some experiments on several dataset(**CUB_200_2011, indoorCVPR_09 and dtd**) using algorithms provided by PaddleTransfer. Most of experiments use the default hyper parameter setting in finetune.py, except Co-Tuning. For Co-Tuning, We use default hyper parameters on bird classification task, lr = 0.002 and wd = 0.0005 on scene classification task, lr = 0.001 and wd = 0.0005 on texture classification task. The outcomes are as follows.
 
 
 
