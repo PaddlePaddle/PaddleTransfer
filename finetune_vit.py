@@ -65,7 +65,7 @@ def custom_config(args):
     config.VALIDATE_FREQ = args.eval_frequency  # freq to do validation
     config.SAVE = args.save
     config.SEED = args.seed
-    if os.path.exsits(args.eval_dir):
+    if os.path.exists(args.eval_dir):
         config.EVAL = True
     
     config.freeze()
