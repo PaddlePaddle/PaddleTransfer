@@ -232,7 +232,7 @@ def finetune_cnn(args):
 
     # STEP 1: Create train and val dataloader
     dataloader_train, num_classes = get_dataloader_train(args)
-    if args.eval_dir:
+    if os.path.exists(args.eval_dir):
         dataloader_val = get_dataloader_val(args)
 
     # STEP 2: load model
@@ -272,7 +272,7 @@ def finetune_cnn(args):
         writer.add_scalar(tag="train_loss", step=epoch, value=train_loss)
 
         # validation
-        if args.eval_dir:
+        if os.path.exists(args.eval_dir):
             if epoch % args.eval_frequency == 0 or epoch == args.epochs:
                 logger.info(f'----- Validation after Epoch: {epoch}')
                 val_loss, val_acc, val_time = validate(

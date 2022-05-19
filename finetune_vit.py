@@ -65,7 +65,7 @@ def custom_config(args):
     config.VALIDATE_FREQ = args.eval_frequency  # freq to do validation
     config.SAVE = args.save
     config.SEED = args.seed
-    if args.eval_dir:
+    if os.path.exsits(args.eval_dir):
         config.EVAL = True
     
     config.freeze()
@@ -277,7 +277,7 @@ def finetune_vit(args):
 
     # STEP 1: Create train and val dataloader
     dataloader_train, num_classes = get_dataloader_train(args,config)
-    if args.eval_dir:
+    if os.path.exists(args.eval_dir):
         dataloader_val = get_dataloader_val(args,config)
     print(f"------------num classes:{num_classes}")
 
@@ -342,7 +342,7 @@ def finetune_vit(args):
         writer.add_scalar(tag="train_loss", step=epoch, value=train_loss)
         
         # validation
-        if args.eval_dir:
+        if os.path.exists(args.eval_dir):
             if epoch % config.VALIDATE_FREQ == 0 or epoch == config.TRAIN.NUM_EPOCHS:
                 logger.info(f'----- Validation after Epoch: {epoch}')
                 val_loss, val_acc1, val_acc5, val_time = validate(
