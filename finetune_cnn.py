@@ -305,5 +305,4 @@ if __name__ == '__main__':
     print(paddle.__version__)
     args = get_args()
     finetune_cnn(args)
-    # test()
     

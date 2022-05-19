@@ -28,7 +28,7 @@ def get_args():
     parser.add_argument('--log_dir', default = './visual_log')
     parser.add_argument('--save', type = str, default = './output')
     
-
+    parser.add_argument('--model_arch', default = 'vit')
     parser.add_argument('--image_size', type = int, default = 384)
     parser.add_argument('--batch_size', type = int, default = 8)
     parser.add_argument('--batch_size_eval', type=int, default=8)
@@ -376,4 +376,4 @@ def finetune_vit(args):
 if __name__ == '__main__':
     print(paddle.__version__)
     args = get_args()
-    finetune_vit()
+    finetune_vit(args)
