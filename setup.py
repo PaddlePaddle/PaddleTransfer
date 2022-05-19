@@ -15,11 +15,10 @@ setup(
     classifiers = [
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3.9'
     ],
     packages = find_packages(),
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     install_requires=[
         'numpy'
     ],
