@@ -43,6 +43,19 @@ python finetune.py --name [experiment_name] --train_dir [path_to_train_dir] --ev
 ```
 For model_arch argument, please choose one from "resnet18", "resnet34", "resnet50", "resnet101", "resnet152", "mobilenet_v2" and "vit", mistyping may lead to unexpected behavior.
 
+Please organize your dataset in the following format.
+```
+|_ root/
+|  |_ class1
+|  |  |_ image_10026.JPEG
+|  |  |_ ...
+|  |_ ...
+|  |
+|  |_ class2
+|     |_ ...
+|     |_ image_9993.JPEG
+```
+
 If you want to finetune the ViT model, please make sure you have set the configuration file and pretrained parameters file correctly, and remember to add the corresponding argumengts(--cfg and --model_path) in your command. You can get the configuration file and pretrained model from [PaddleVit](https://github.com/BR-IDL/PaddleViT/tree/develop/image_classification/ViT).
 
 ### Use PaddleTransfer in Your Own Code
