@@ -41,7 +41,7 @@ Users can run our demo code for a quick start
 ```
 python finetune.py --name [experiment_name] --train_dir [path_to_train_dir] --eval_dir [path_to_eval_dir] --model_arch [model_archtechture] --algo [finetune_algorithm] --gpu [device_for_experiment]
 ```
-For model_arch argument, please choose one from "resnet18", "resnet34", "resnet50", "resnet101", "resnet152", "mobilenet_v2" and "vit", mistyping may lead to unexpected behavior.
+For model_arch argument, please choose one from "resnet18", "resnet34", "resnet50", "resnet101", "resnet152", "mobilenet_v2" and "vit". And for algo argument, please choose one from "base", "mmd", "rifle", "l2sp", "delta" and "cot". Mistyping may lead to unexpected behavior.
 
 Please organize your dataset in the following format.
 ```
@@ -51,7 +51,7 @@ Please organize your dataset in the following format.
 |  |  |_ ...
 |  |_ ...
 |  |
-|  |_ class2
+|  |_ class100
 |     |_ ...
 |     |_ image_9993.JPEG
 ```
