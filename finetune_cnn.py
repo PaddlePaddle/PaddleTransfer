@@ -83,6 +83,8 @@ def determine_algo(model, args, train_loader):
         algo = FinetuneMMD(model, model_arch = args.model_arch)
     elif args.algo == 'cot':
         algo = FinetuneCOT(model, model_arch = args.model_arch, data_loader = train_loader)
+    elif args.algo == 'mars_pgm':
+        algo = FinetuneMARSPGM(model, model_arch = args.model_arch)
     return algo
 
 
