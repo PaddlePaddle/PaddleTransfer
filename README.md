@@ -2,7 +2,7 @@
 ## Introduction
 PaddleTransfer, a transfer learning tool of PaddlePaddle, provides a variety of algorithms to transfer the knowledge learned from source tasks to target task. It enables users to use the state-of-the-art transfer learning algorithms on main-stream model archtechtures.
 
-PaddleTransfer provides various transfer learning algorithms, including **MMD(JMLR'12),L2-SP(ICML'18), DELTA(ICLR'19), RIFLE(ICML'20), Co-Tuning(NIPS'20)** and supports many main-stream model archtechtures, including **ResNet, MobileNet and ViT**. With several lines of codes, users can apply these algorithms on our predifined model or their own model easily.
+PaddleTransfer provides various transfer learning algorithms, including **[MMD(JMLR'12)](https://www.jmlr.org/papers/volume13/gretton12a/gretton12a.pdf?ref=https://githubhelp.com),[L2-SP(ICML'18)](http://proceedings.mlr.press/v80/li18a/li18a.pdf), [DELTA(ICLR'19)](https://openreview.net/pdf?id=rkgbwsAcYm), [RIFLE(ICML'20)](http://proceedings.mlr.press/v119/li20r/li20r.pdf), [Co-Tuning(NIPS'20)](https://proceedings.neurips.cc/paper/2020/file/c8067ad1937f728f51288b3eb986afaa-Paper.pdf), [MARS-PGM(ICLR'21)](https://openreview.net/pdf?id=IFqrg1p5Bc)** and supports many main-stream model archtechtures, including **ResNet, MobileNet and ViT**. With several lines of codes, users can apply these algorithms on our predifined model or their own model easily.
 
 ## Contents
 * [Key Highlights](#Key-Highlights)
@@ -33,6 +33,7 @@ if you want to use our package in your own code, the following dependencies are 
 
 If you want to run our demo script, please make sure the following packages are installed correctly on your machine.
 * visualdl
+* yacs
 
 
 ## Usage Guideline
@@ -104,12 +105,12 @@ loss.backward()
 ## Provided Algorithms
 So far we have provided 5 algorithms for finetune, which are **MMD, L2-SP, DELTA, RIFLE and Co-Tuning**. If you do not want to use any finetune algorithms, just use the following code for vanilla finetune, the corresponding code for invoking different algorithms are in the respective sections.
 ```
-algo = FinetuneBASE(model,model_arch)
+algo = FinetuneBASE(model, model_arch)
 ```
 ### MMD
 Use the following code for invoking MMD algorithm 
 ```
-algo = FinetuneMMD(model,model_arch,confs=_confs)
+algo = FinetuneMMD(model, model_arch, confs=_confs)
 ```
 The default hyperparameters for MMD algorithms is as follows, if you want to modify them, please pass your own confs object to the initializer.
 ```
@@ -119,7 +120,7 @@ _confs = {'reg_weight': 0.1, 'kernel_mul': 2.0, 'kernel_num': 5}
 ### L2-SP
 Use the following code for invoking L2-SP algorithm 
 ```
-algo = FinetuneL2SP(model,model_arch,confs=_confs)
+algo = FinetuneL2SP(model, model_arch, confs=_confs)
 ```
 The default hyperparameters for L2SP algorithms is as follows, if you want to modify them, please pass your own confs object to the initializer.
 ```
@@ -129,7 +130,7 @@ _confs = {'reg_weight': 0.01}
 ### DELTA
 Use the following code for invoking DELTA algorithm 
 ```
-algo = FinetuneDELTA(model,model_arch,confs=_confs)
+algo = FinetuneDELTA(model, model_arch, confs=_confs)
 ```
 The default hyperparameters for DELTA algorithms is as follows, if you want to modify them, please pass your own confs object to the initializer.
 ```
@@ -139,7 +140,7 @@ _confs = {'reg_weight': 0.01}
 ### RIFLE
 Use the following code for invoking RIFLE algorithm 
 ```
-algo = FinetuneRIFLE(model,model_arch,confs=_confs)
+algo = FinetuneRIFLE(model, model_arch, confs=_confs)
 ```
 The default hyperparameters for RIFLE algorithms is as follows, if you want to modify them, please pass your own confs object to the initializer.
 ```
@@ -160,9 +161,19 @@ The default hyperparameters for Co-Tuning algorithms is as follows, if you want 
 ```
  _confs = {'reg_weight': 2.3}
 ```
+### MARS-PGM
+
+Use the following code for invoking MARS-PGM algorithm. The data_loader is used for relationship learning. 
+```
+algo = FinetuneMARSPGM(model, model_arch, confs=_confs)
+```
+The default hyperparameters for MARS-PGM algorithms is as follows, if you want to modify them, please pass your own confs object to the initializer.
+```
+_confs = {'norm': 'mars', 'lambda_conv': float(20.), 'lambda_linear': float(20.), 'lambda_bn': float(20.)}
+```
 
 ### Algorithm Performance
-We have conducted some experiments on several dataset(**CUB_200_2011, indoorCVPR_09 and dtd**) using algorithms provided by PaddleTransfer. Most of experiments use the default hyper parameter setting in finetune.py, except Co-Tuning. For Co-Tuning, We use default hyper parameters on bird classification task, lr = 0.002 and wd = 0.0005 on scene classification task, lr = 0.001 and wd = 0.0005 on texture classification task. The outcomes are as follows.
+We have conducted some experiments on several dataset(**CUB_200_2011, indoorCVPR_09 and dtd**) using algorithms provided by PaddleTransfer. Most of experiments use the default hyper parameter setting in finetune.py, except Co-Tuning and MARS-PGM. For Co-Tuning, we use default hyper parameters on bird classification task, `lr = 0.002` and `wd = 0.0005` on scene classification task, `lr = 0.001` and `wd = 0.0005` on texture classification task. For MARS-PGM, we use `lambda_linear = 35` and `lambda_conv = lambda_bn = 20` on bird classification task, default hyper parameters on scene classification task, `lambda_linear = 15` and `lambda_conv = lambda_bn = 10` on texture classification task. The outcomes are as follows.
 
 
 
@@ -171,6 +182,7 @@ We have conducted some experiments on several dataset(**CUB_200_2011, indoorCVPR
 | BASE     | 80.25    | 77.34    | 62.07   |
 | MMD      | 80.41    | 78.27    | 63.15   |
 | L2SP     | 80.39    | 77.57    | 65.34   |
-| DELTA    | 81.04    | **78.79**    | 67.47   |
+| DELTA    | 81.04    | 78.79    | 67.47   |
 | RIFLE    | 80.74    | 78.08    | 63.15   |
 | CoTuning | **81.07**    | 78.00    | **69.39**   |
+| MARS-PGM | 81.01    | **78.87**    | 69.35   |
